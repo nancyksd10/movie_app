@@ -1,15 +1,72 @@
-class Github{
-    constructor(){
-        this.client_id='imdb8.p.rapidapi.com';
-        this.client_secret='0cf53dd5b5mshebc2abdb4bde331p1961f6jsn04d6b5d092f5';
-        
-    }
-    async getmovie(movie)
-    {
-        const movie_response= await fetch('https://imdb8.p.rapidapi.com/auto-complete/ ${movie}?client_id=${this.client_id}& client_secret=${this.client_secret}');
-       const movie1= await movie_response.json();
-        return{
-            profile
+const API_KEY='api_key=daa4b3ef2713d7642ea4fa4679aeaa2a';
+const BASE_URL = 'https://api.themoviedb.org/3';
+const API_URL=BASE_URL+'/discover/movie?sort_by=popularity.desc&'+API_KEY;
+getMovies(API_URL);
+const IMG_URL='https://image.tmdb.org/t/p/w500';
+const search_url=BASE_URL+'/search/movie?'+API_KEY;
+
+const main=document.getElementById('main');
+const form=document.getElementById('form');
+const search=document.getElementById('search');
+function getMovies(url)
+{
+    fetch(url).then(res=> res.json()).then(
+        data=>{
+            console.log(data);
+            showMovies(data.results);
+           
         }
+    )
+}
+
+function showMovies(data) {
+    main.innerHTML = '';
+
+    data.forEach(movie => {
+        const {title, poster_path, vote_average, overview, id} = movie;
+        const movieEl = document.createElement('div');
+        movieEl.classList.add('movie');
+        movieEl.innerHTML = `
+             <img src="${poster_path? IMG_URL+poster_path: "http://via.placeholder.com/1080x1580" }" alt="${title}">
+            <div class="movie-info">
+                <h3>${title}</h3>
+                <span class="${getColor(vote_average)}">${vote_average}</span>
+            </div>
+            <div class="overview">
+                <h3>Overview</h3>
+                ${overview}
+                <br/> 
+                <button class="know-more" id="${id}">Know More</button
+            </div>
+            <div>
+  <span id="store">Add to favourite
+    <button id="but">+</button>
+</div>
+  <video src="https://api.themoviedb.org/3/movie/${id}/videos?api_key=daa4b3ef2713d7642ea4fa4679aeaa2a&language=en-US" id="trailer"></video>
+        </div>
+        `
+        
+        main.appendChild(movieEl);
+
+    })
+}
+
+function getColor(vote) {
+    if(vote>= 8){
+        return 'green'
+    }else if(vote >= 5){
+        return "orange"
+    }else{
+        return 'red'
     }
 }
+
+form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const searchTerm=search.value;
+    if(searchTerm)
+   { getMovies(search_url+'&query='+searchTerm);}
+   else{
+       getMovies(API_URL);
+   }
+})
